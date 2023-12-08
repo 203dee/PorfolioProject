@@ -144,3 +144,27 @@ From PercentPopulationVaccinated
 USE ProfolioProject
 go
 Create View 
+
+
+USE ProfolioProject
+go
+Create View RollingPeopleVaccinated AS
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(Convert(int, vac.new_vaccinations)) OVER (Partition by  dea.location Order by dea.location, dea.date rows unbounded preceding) as RollingPeopleVaccinated
+From ProfolioProject.dbo.COVIDDeaths dea
+JOIN ProfolioProject..CovidVaccinations vac
+	ON dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+--order by 2,3
+
+USE ProfolioProject
+go
+Create View TotalDeathCount AS
+
+Select Location, MAX(cast(Total_deaths as int)) as TotalDeathCount
+From CovidDeaths
+--Where location like '%states%'
+Where continent is not null 
+Group by Location
